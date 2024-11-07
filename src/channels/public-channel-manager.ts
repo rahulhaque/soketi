@@ -1,12 +1,11 @@
 import { PresenceMember } from '../channels/presence-channel-manager';
 import { PusherMessage } from '../message';
 import { Server } from '../server';
-import { UserDataInterface } from '../adapters/user-data-interface';
 import { Utils } from '../utils';
 import { WebSocket } from 'uWebSockets.js';
 
 export interface JoinResponse {
-    ws: WebSocket<UserDataInterface>;
+    ws: WebSocket;
     success: boolean;
     channelConnections?: number;
     authError?: boolean;
@@ -30,7 +29,7 @@ export class PublicChannelManager {
     /**
      * Join the connection to the channel.
      */
-    join(ws: WebSocket<UserDataInterface>, channel: string, message?: PusherMessage): Promise<JoinResponse> {
+    join(ws: WebSocket, channel: string, message?: PusherMessage): Promise<JoinResponse> {
         if (Utils.restrictedChannelName(channel)) {
             return Promise.resolve({
                 ws,
@@ -40,7 +39,7 @@ export class PublicChannelManager {
             });
         }
 
-        if (!ws.getUserData().app) {
+        if (!ws.app) {
             return Promise.resolve({
                 ws,
                 success: false,
@@ -49,7 +48,7 @@ export class PublicChannelManager {
             });
         }
 
-        return this.server.adapter.addToChannel(ws.getUserData().app.id, channel, ws).then(connections => {
+        return this.server.adapter.addToChannel(ws.app.id, channel, ws).then(connections => {
             return {
                 ws,
                 success: true,
@@ -61,8 +60,8 @@ export class PublicChannelManager {
     /**
      * Mark the connection as closed and unsubscribe it.
      */
-    leave(ws: WebSocket<UserDataInterface>, channel: string): Promise<LeaveResponse> {
-        return this.server.adapter.removeFromChannel(ws.getUserData().app.id, channel, ws.getUserData().id).then((remainingConnections) => {
+    leave(ws: WebSocket, channel: string): Promise<LeaveResponse> {
+        return this.server.adapter.removeFromChannel(ws.app.id, channel, ws.id).then((remainingConnections) => {
             return {
                 left: true,
                 remainingConnections: remainingConnections as number,

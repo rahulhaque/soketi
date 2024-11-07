@@ -1,7 +1,6 @@
 import { LocalAdapter } from './local-adapter';
 import { Log } from '../log';
 import { PresenceMemberInfo } from '../channels/presence-channel-manager';
-import { UserDataInterface } from "./user-data-interface";
 import { v4 as uuidv4 } from 'uuid';
 import { WebSocket } from 'uWebSockets.js';
 
@@ -58,7 +57,7 @@ export interface RequestBody extends RequestOptions {
 
 export interface Response {
     requestId: string;
-    sockets?: Map<string, WebSocket<UserDataInterface>>;
+    sockets?: Map<string, WebSocket>;
     members?: [string, PresenceMemberInfo][];
     channels?: [string, string[]][];
     channelsWithSocketsCount?: [string, number][];
@@ -112,7 +111,7 @@ export abstract class HorizontalAdapter extends LocalAdapter {
         [RequestType.SOCKETS]: {
             computeResponse: (request: Request, response: Response) => {
                 if (response.sockets) {
-                    response.sockets.forEach(ws => request.sockets.set(ws.getUserData().id, ws));
+                    response.sockets.forEach(ws => request.sockets.set(ws.id, ws));
                 }
             },
             resolveValue: (request: Request, response: Response) => {
@@ -122,7 +121,7 @@ export abstract class HorizontalAdapter extends LocalAdapter {
         [RequestType.CHANNEL_SOCKETS]: {
             computeResponse: (request: Request, response: Response) => {
                 if (response.sockets) {
-                    response.sockets.forEach(ws => request.sockets.set(ws.getUserData().id, ws));
+                    response.sockets.forEach(ws => request.sockets.set(ws.id, ws));
                 }
             },
             resolveValue: (request: Request, response: Response) => {
@@ -308,7 +307,7 @@ export abstract class HorizontalAdapter extends LocalAdapter {
     /**
      * Get all sockets from the namespace.
      */
-    async getSockets(appId: string, onlyLocal = false): Promise<Map<string, WebSocket<UserDataInterface>>> {
+    async getSockets(appId: string, onlyLocal = false): Promise<Map<string, WebSocket>> {
         return new Promise((resolve, reject) => {
             super.getSockets(appId, true).then(localSockets => {
                 if (onlyLocal) {
@@ -416,7 +415,7 @@ export abstract class HorizontalAdapter extends LocalAdapter {
     /**
      * Get all the channel sockets associated with a namespace.
      */
-    async getChannelSockets(appId: string, channel: string, onlyLocal = false): Promise<Map<string, WebSocket<UserDataInterface>>> {
+    async getChannelSockets(appId: string, channel: string, onlyLocal = false): Promise<Map<string, WebSocket>> {
         return new Promise((resolve, reject) => {
             super.getChannelSockets(appId, channel).then(localSockets => {
                 if (onlyLocal) {
@@ -575,15 +574,15 @@ export abstract class HorizontalAdapter extends LocalAdapter {
         switch (request.type) {
             case RequestType.SOCKETS:
                 this.processRequestFromAnotherInstance(request, () => super.getSockets(appId, true).then(sockets => {
-                    let localSockets: WebSocket<UserDataInterface>[] = Array.from(sockets.values());
+                    let localSockets: WebSocket[] = Array.from(sockets.values());
 
                     return {
                         sockets: localSockets.map(ws => ({
-                            id: ws.getUserData().id,
-                            subscribedChannels: ws.getUserData().subscribedChannels,
-                            presence: ws.getUserData().presence,
-                            ip: ws.getUserData().ip,
-                            ip2: ws.getUserData().ip2,
+                            id: ws.id,
+                            subscribedChannels: ws.subscribedChannels,
+                            presence: ws.presence,
+                            ip: ws.ip,
+                            ip2: ws.ip2,
                         })),
                     };
                 }));
@@ -591,13 +590,13 @@ export abstract class HorizontalAdapter extends LocalAdapter {
 
             case RequestType.CHANNEL_SOCKETS:
                 this.processRequestFromAnotherInstance(request, () => super.getChannelSockets(appId, request.opts.channel).then(sockets => {
-                    let localSockets: WebSocket<UserDataInterface>[] = Array.from(sockets.values());
+                    let localSockets: WebSocket[] = Array.from(sockets.values());
 
                     return {
                         sockets: localSockets.map(ws => ({
-                            id: ws.getUserData().id,
-                            subscribedChannels: ws.getUserData().subscribedChannels,
-                            presence: ws.getUserData().presence,
+                            id: ws.id,
+                            subscribedChannels: ws.subscribedChannels,
+                            presence: ws.presence,
                         })),
                     };
                 }));

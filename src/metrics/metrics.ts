@@ -4,7 +4,6 @@ import { Log } from './../log';
 import { MetricsInterface } from './metrics-interface';
 import { PrometheusMetricsDriver } from './prometheus-metrics-driver';
 import { Server } from '../server';
-import { UserDataInterface } from "../adapters/user-data-interface";
 
 export class Metrics implements MetricsInterface {
     /**
@@ -26,7 +25,7 @@ export class Metrics implements MetricsInterface {
     /**
      * Handle a new connection.
      */
-    markNewConnection(ws: WebSocket<UserDataInterface>): void {
+    markNewConnection(ws: WebSocket): void {
         if (this.server.options.metrics.enabled) {
             this.driver.markNewConnection(ws);
         }
@@ -35,7 +34,7 @@ export class Metrics implements MetricsInterface {
     /**
      * Handle a disconnection.
      */
-    markDisconnection(ws: WebSocket<UserDataInterface>): void {
+    markDisconnection(ws: WebSocket): void {
         if (this.server.options.metrics.enabled) {
             this.driver.markDisconnection(ws);
         }

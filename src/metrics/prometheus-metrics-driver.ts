@@ -2,7 +2,6 @@ import * as prom from 'prom-client';
 import { WebSocket } from 'uWebSockets.js';
 import { MetricsInterface } from './metrics-interface';
 import { Server } from '../server';
-import { UserDataInterface } from "../adapters/user-data-interface";
 import { Utils } from '../utils';
 
 interface PrometheusMetrics {
@@ -81,17 +80,17 @@ export class PrometheusMetricsDriver implements MetricsInterface {
     /**
      * Handle a new connection.
      */
-    markNewConnection(ws: WebSocket<UserDataInterface>): void {
-        this.metrics.connectedSockets.inc(this.getTags(ws.getUserData().app.id));
-        this.metrics.newConnectionsTotal.inc(this.getTags(ws.getUserData().app.id));
+    markNewConnection(ws: WebSocket): void {
+        this.metrics.connectedSockets.inc(this.getTags(ws.app.id));
+        this.metrics.newConnectionsTotal.inc(this.getTags(ws.app.id));
     }
 
     /**
      * Handle a disconnection.
      */
-    markDisconnection(ws: WebSocket<UserDataInterface>): void {
-        this.metrics.connectedSockets.dec(this.getTags(ws.getUserData().app.id));
-        this.metrics.newDisconnectionsTotal.inc(this.getTags(ws.getUserData().app.id));
+    markDisconnection(ws: WebSocket): void {
+        this.metrics.connectedSockets.dec(this.getTags(ws.app.id));
+        this.metrics.newDisconnectionsTotal.inc(this.getTags(ws.app.id));
     }
 
     /**

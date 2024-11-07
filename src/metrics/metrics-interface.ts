@@ -1,5 +1,4 @@
 import * as prom from 'prom-client';
-import { UserDataInterface } from "../adapters/user-data-interface";
 import { WebSocket } from 'uWebSockets.js';
 
 export interface MetricsInterface {
@@ -11,12 +10,12 @@ export interface MetricsInterface {
     /**
      * Handle a new connection.
      */
-    markNewConnection(ws: WebSocket<UserDataInterface>): void;
+    markNewConnection(ws: WebSocket): void;
 
     /**
      * Handle a disconnection.
      */
-    markDisconnection(ws: WebSocket<UserDataInterface>): void;
+    markDisconnection(ws: WebSocket): void;
 
     /**
      * Handle a new API message event being received and sent out.
